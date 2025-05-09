@@ -22,9 +22,9 @@ import pygetwindow as gw
 import re
 
 
-# Load environment variables from the .env file.
-env_vars = dotenv_values(".env")
-GroqAPIKey = env_vars.get("GroqAPIKey")  # Retrieve the Groq API key.
+
+GroqAPIKey = "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" 
+client = Groq(api_key=GroqAPIKey)
 
 # Define CSS classes for parsing specific elements in HTML content.
 classes = ["zCubwf", "hgKElc", "LTKOO SY7ric", "ZOLcW", "gsrt vk_bk FzvWSb YwPhnf", "pcclasses=LzCubwf", "hgKElc", "LIKOO SY/ric", "20LcW", "gsrt vk_bk FzvWSb YwPhnf", "pciqee", "tw-Data-text tw-text-small tw-ta", "IZ6rdc", "05uR6d LTKOO", "vlzY6d", "webanswers-webanswers_table_webanswers-table", "dDoNo ikb48b gsrt", "sXLa0e", "LWkfKe", "VQF4g", "qv3Wpe", "kno-rdesc", "SPZz6b"]
