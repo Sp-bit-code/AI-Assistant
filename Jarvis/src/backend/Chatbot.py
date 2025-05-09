@@ -3,10 +3,9 @@ from json import load, dump
 import datetime 
 from dotenv import dotenv_values  
 
-env_vars = dotenv_values(".env")
-Username = env_vars.get("Username")
-Assistantname = env_vars.get("Assistantname")
-GroqAPIKey = env_vars.get("GroqAPIKey")
+Username = "Sparsh Srivastava"  
+Assistantname = "sparsh"  
+GroqAPIKey = "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" 
 client = Groq(api_key=GroqAPIKey)
 messages = []
 System = f"""Hello, I am {Username}, You are a very accurate and advanced AI chatbot named {Assistantname} which also has real-time up-to-date information from the internet.
