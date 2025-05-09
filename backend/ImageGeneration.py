@@ -2,10 +2,12 @@ import asyncio
 from random import randint
 from PIL import Image
 import requests
-from dotenv import get_key
 import os
 from time import sleep
 from io import BytesIO
+
+# Directly set the Hugging Face API key
+HUGGING_FACE_API_KEY = "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"  # Replace with your actual API key
 
 # Function to open and display images based on a given prompt
 def open_images(prompt):
@@ -28,7 +30,7 @@ def open_images(prompt):
 
 # API details for the Hugging Face Stable Diffusion model
 API_URL = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
-headers = {"Authorization": f"Bearer {get_key('.env', 'Hugging_FaceAPIKey')}"}
+headers = {"Authorization": f"Bearer {HUGGING_FACE_API_KEY}"}  # Use the direct API key
 
 # Async function to send a query to the Hugging Face API
 async def query(payload):
@@ -94,4 +96,4 @@ while True:
             sleep(1)  # Wait for 1 second before checking again
     except Exception as e:
         print(f"An error occurred in the main loop: {e}")
-        sleep(5) # Wait longer if there's an error to avoid rapid retries
+        sleep(5)  
