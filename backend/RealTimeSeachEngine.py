@@ -7,14 +7,10 @@ import webbrowser
 from dotenv import dotenv_values
 
 # Load environment variables from the env file.
-env_vars = dotenv_values(".env")
 
-# Retrieve environment variables for the chatbot configuration.
-Username = env_vars.get("Username")
-Assistantname = env_vars.get("Assistantname")
-GroqAPIKey = env_vars.get("GroqAPIKey")
-
-# Initialize the Groq client with the provided API key.
+Username = "Sparsh Srivastava"  
+Assistantname = "sparsh"  
+GroqAPIKey = "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" 
 client = Groq(api_key=GroqAPIKey)
 
 # Define the system instructions for the chatbot.
