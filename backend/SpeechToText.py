@@ -7,11 +7,7 @@ from dotenv import dotenv_values
 import os 
 import mtranslate as mt 
 
-# Load environment variables from the .env file. 
-env_vars = dotenv_values(".env") 
-
-# Get the input language setting from the environment variables. 
-InputLanguage = env_vars.get("InputLanguage") 
+InputLanguage = "en"
 
 # Define the HTML code for the speech recognition interface. 
 HtmlCode = '''<!DOCTYPE html>
