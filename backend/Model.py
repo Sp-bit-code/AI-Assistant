@@ -1,12 +1,7 @@
 import cohere
 from rich import print
-from dotenv import dotenv_values
-# Load environment variables from .env file
-env_vars = dotenv_values(".env")
-cohereAPIkey = env_vars.get("COHERE_API_KEY")  # Ensure this matches the key in your .env file
-# Check if the API key is loaded
-if not cohereAPIkey:
-    raise ValueError("Cohere API key is not set. Please set the COHERE_API_KEY environment variable.")
+# Directly set the Cohere API key
+cohereAPIkey = "cSgtaMKgevdK0ZFkeQkoJC4K28jrVZ1THl64Zskk"  # Replace with your actual API key
 # Initialize the Cohere client
 co = cohere.Client(api_key=cohereAPIkey)
 # Define recognized functions
