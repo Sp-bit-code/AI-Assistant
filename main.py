@@ -1,8 +1,217 @@
+import sys
+import os
+from Frontend.Graphics.GUI import ( 
+    GraphicalUserInterface, 
+    SetAssistantStatus, 
+    ShowTextToScreen, 
+    TempDirectoryPath, 
+    SetMicrophoneStatus, 
+    AnswerModifier, 
+    QueryModifier, 
+    GetMicrophoneStatus, 
+    GetAssistantStatus
+    
+)
+
+# Ab modules import karo
+from backend.Model import FirstLayerDMM
+from backend.RealTimeSeachEngine import RealtimeSearchEngine
+from backend.Automation import Automation
+from backend.SpeechToText import SpeechRecognition
+from backend.TextToSpeech import TextToSpeech
+from backend.Chatbot import ChatBot
+from Frontend.Graphics.GUI import GraphicalUserInterface
+from PyQt5.QtWidgets import QApplication
+import time
+from dotenv import dotenv_values
+from asyncio import run
+from time import sleep
+import subprocess
+import threading
+import json
+import os
+import webbrowser
+import requests
+
+
+sys.path.append(r"C:\Users\LENOVO\Desktop\c++\jarvis\backend")
+sys.path.append(r"C:\Users\LENOVO\Desktop\c++\jarvis\Frontend\Graphics")
+sys.path.append(r"C:\Users\LENOVO\Desktop\c++\jarvis\backend\Model.py")
+sys.path.append(r"C:\Users\LENOVO\Desktop\c++\jarvis\backend\RealTimeSeachEngine.py")
+sys.path.append(r"C:\Users\LENOVO\Desktop\c++\jarvis\backend\Automation.py")
+sys.path.append(r"C:\Users\LENOVO\Desktop\c++\jarvis\backend\SpeechToText.py")
+sys.path.append(r"C:\Users\LENOVO\Desktop\c++\jarvis\backend\TextToSpeech.py")
+sys.path.append(r"C:\Users\LENOVO\Desktop\c++\jarvis\backend\Chatbot.py")
+sys.path.append(r"C:\Users\LENOVO\Desktop\c++\jarvis\Frontend\Graphics\GUI2.py")
+TempDirectoryPath = r'C:\Users\LENOVO\Desktop\c++\jarvis\Frontend\Files'
+
+env_vars = dotenv_values(".env")
+Username = env_vars.get("Username", "User")  # Default value if None
+Assistantname = env_vars.get("Assistantname", "Assistant")  # Default value if None
+
+DefaultMessage = f"{Username}: Hello {Assistantname}, How are you?\n{Assistantname}: Welcome {Username}. I am doing well. How may I help you?"
+
+subprocesses = []
+Functions = ["open", "close", "play", "system", "content", "google search", "youtube search"]
+def ShowDefaultChatIfNoChats():
+    with open(r'Data\ChatLog.json', "r", encoding='utf-8') as file:
+        if len(file.read()) < 5:
+            with open(os.path.join(TempDirectoryPath, 'Database.data'), 'w', encoding='utf-8') as file:
+                file.write("")
+            with open(os.path.join(TempDirectoryPath, 'Responses.data'), 'w', encoding='utf-8') as file:
+                file.write(DefaultMessage)
+
+def ReadChatLogJson():
+    with open(r'Data\ChatLog.json', 'r', encoding='utf-8') as file:
+        chatlog_data = json.load(file)
+    return chatlog_data
+
+def ChatLogIntegration():
+    json_data = ReadChatLogJson()
+    formatted_chatlog = ""
+    for entry in json_data:
+        if entry["role"] == "user":
+            formatted_chatlog += f"User: {entry['content']}\n"
+        elif entry["role"] == "assistant":
+            formatted_chatlog += f"Assistant: {entry['content']}\n"
+    formatted_chatlog = formatted_chatlog.replace("User", Username)
+    formatted_chatlog = formatted_chatlog.replace("Assistant", Assistantname)
+    with open(os.path.join(TempDirectoryPath, 'Database.data'), 'w', encoding='utf-8') as file:
+        file.write(AnswerModifier(formatted_chatlog))
+
+def ShowChatsOnGUI():
+    with open(os.path.join(TempDirectoryPath, 'Database.data'), "r", encoding="utf-8") as file:
+        data = file.read()
+    if len(str(data)) > 0:
+        lines = data.split('\n')
+        result = '\n'.join(lines)
+    with open(os.path.join(TempDirectoryPath, 'Responses.data'), "w", encoding="utf-8") as file:
+        file.write(result)
+
+def InitialExecution():
+    SetMicrophoneStatus("False")
+    ShowTextToScreen("")
+    ShowDefaultChatIfNoChats()
+    ChatLogIntegration()
+    ShowChatsOnGUI()
+
+InitialExecution()
+
+def MainExecution():
+    TaskExecution = False
+    ImageExecution = False
+    ImageGenerationQuery = ""
+    SetAssistantStatus("Listening...")
+    Query = SpeechRecognition()
+    ShowTextToScreen(f"{Username}: {Query}")
+    SetAssistantStatus("Thinking...")
+    Decision = FirstLayerDMM(Query)
+    print(f"\nDecision: {Decision}\n")
+    
+    G = [i for i in Decision if i.startswith("general")]
+    R = [i for i in Decision if i.startswith("realtime")]
+    Mearged_query = " and ".join(["".join(i.split()[1:]) for i in Decision if i.startswith("general") or i.startswith("realtime")])
+    
+    for queries in Decision:
+        if "generate" in queries:
+            ImageGenerationQuery = queries.split("generate", 1)[1].strip()
+            ImageExecution=True
+    if not TaskExecution:
+        if any(queries.startswith(func) for func in Functions):
+            run(Automation(list(Decision)))
+            TaskExecution = True
+    if ImageExecution:
+        try:
+            with open(os.path.join(TempDirectoryPath, 'ImageGeneration.data'), "w") as file:
+                file.write(f"{ImageGenerationQuery},True")
+            p1 = subprocess.Popen(['python', r'Backend\ImageGeneration.py'], 
+                                  stdout=subprocess.PIPE, 
+                                  stderr=subprocess.PIPE, 
+                                  stdin=subprocess.PIPE, 
+                                  shell=False)
+            subprocesses.append(p1)
+        except Exception as e:
+            print(f"Error starting ImageGeneration.py: {e}")
+
+
+    
+    if G and R:
+        SetAssistantStatus("Searching...")
+        Answer = RealtimeSearchEngine(QueryModifier(Mearged_query))
+        ShowTextToScreen(f"{Assistantname}: {Answer}")
+        SetAssistantStatus("Answering...")
+        TextToSpeech(Answer)
+        return True
+    else:
+        for Queries in Decision:
+            if "general" in Queries:
+                SetAssistantStatus("Thinking...")
+                QueryFinal = Queries.replace("general", "")
+                Answer = ChatBot(QueryModifier(QueryFinal))
+                ShowTextToScreen(f"{Assistantname}: {Answer}")
+                SetAssistantStatus("Answering...")
+                TextToSpeech(Answer)
+                return True
+            elif "realtime" in Queries:
+                SetAssistantStatus("Searching...")
+                QueryFinal = Queries.replace("realtime", "")
+                Answer = RealtimeSearchEngine(QueryModifier(QueryFinal))
+                ShowTextToScreen(f"{Assistantname}: {Answer}")
+                SetAssistantStatus("Answering...")
+                TextToSpeech(Answer)
+                return True
+            elif "exit" in Queries:
+                QueryFinal = "Okay, Bye!"
+                Answer = ChatBot(QueryModifier(QueryFinal))
+                ShowTextToScreen(f"{Assistantname}: {Answer}")
+                SetAssistantStatus("Answering...")
+                TextToSpeech(Answer)
+                os._exit(1)
+
+exit_flag = False  # Global flag to stop threads
+subprocesses = []  # Store subprocess references
+
+def FirstThread():
+    global exit_flag
+    while not exit_flag:
+        CurrentStatus = GetMicrophoneStatus()
+        if CurrentStatus == "True":
+            MainExecution()
+        else:
+            AIStatus = GetAssistantStatus()
+            if "Available..." in AIStatus:
+                time.sleep(0.1)
+            else:
+                SetAssistantStatus("Available...")
+
+if __name__ == "__main__":
+    try:
+        thread2 = threading.Thread(target=FirstThread, daemon=True)
+        thread2.start()
+        p1 = subprocess.Popen(
+            ['python', r'Backend\ImageGeneration.py'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            stdin=subprocess.PIPE,
+            shell=False
+        )
+        subprocesses.append(p1)
+        app = QApplication([])
+        GraphicalUserInterface()
+        app.exec_()
+    except KeyboardInterrupt:
+        exit_flag = True 
+        print("Exiting...")
+    finally:
+        for p in subprocesses:
+            if p.poll() is None: 
+                p.terminate()
+                p.wait()
+        print("All processes and threads stopped.")
 
 
 
-
-
+#-------------------------------------------------WEB VERISON---------------------------------------------
 
 # import os
 # import json
@@ -228,167 +437,11 @@
 
 # st.markdown("---")
 # st.markdown("© Your Assistant powered by Streamlit")
-import os
-import json
-import subprocess
-import asyncio
-import streamlit as st
-from dotenv import dotenv_values
 
-# 🔧 Commented Backend Modules for now
-# from backend.Model import FirstLayerDMM
-# from backend.RealTimeSeachEngine import RealtimeSearchEngine
-# from backend.Automation import Automation
-# from backend.SpeechToText import SpeechRecognition
-# from backend.TextToSpeech import TextToSpeech
-# from backend.Chatbot import ChatBot
 
-# ✅ Debug message to confirm app loads
-st.write("✅ App started... Streamlit is working!")
+#-------------------------------------------------WEB VERISON---------------------------------------------
 
-# --- Utility session state setup ---
-def set_assistant_status(status):
-    st.session_state.assistant_status = status
 
-def get_assistant_status():
-    return st.session_state.get("assistant_status", "Available...")
 
-def set_microphone_status(status):
-    st.session_state.microphone_status = status
 
-def get_microphone_status():
-    return st.session_state.get("microphone_status", "False")
 
-# --- Environment setup ---
-env_vars = dotenv_values(".env")
-Username = env_vars.get("Username", "User")
-Assistantname = env_vars.get("Assistantname", "Assistant")
-# Deployment-safe relative path
-BASE_DIR = os.path.dirname(__file__)
-TempDirectoryPath = os.path.join(BASE_DIR, 'Frontend', 'Files')
-DefaultMessage = f"{Username}: Hello {Assistantname}, How are you?\n{Assistantname}: Welcome {Username}. I am doing well. How may I help you?"
-
-chat_log_path = os.path.join(BASE_DIR, 'data', 'ChatLog.json')
-
-# --- Chat management ---
-def initialize_chat_log():
-    if not os.path.exists(chat_log_path) or os.path.getsize(chat_log_path) < 5:
-        os.makedirs(os.path.dirname(chat_log_path), exist_ok=True)
-        with open(os.path.join(TempDirectoryPath, 'Database.data'), 'w', encoding='utf-8') as file:
-            file.write("")
-        with open(os.path.join(TempDirectoryPath, 'Responses.data'), 'w', encoding='utf-8') as file:
-            file.write(DefaultMessage)
-        with open(chat_log_path, 'w', encoding='utf-8') as file:
-            json.dump([], file)
-
-def read_chat_log():
-    try:
-        with open(chat_log_path, 'r', encoding='utf-8') as file:
-            return json.load(file)
-    except Exception:
-        return []
-
-def chat_log_integration():
-    json_data = read_chat_log()
-    formatted_chatlog = ""
-    for entry in json_data:
-        role = Username if entry["role"] == "user" else Assistantname
-        formatted_chatlog += f"{role}: {entry['content']}\n"
-    with open(os.path.join(TempDirectoryPath, 'Database.data'), 'w', encoding='utf-8') as file:
-        file.write(formatted_chatlog)
-
-def show_chats_on_gui():
-    try:
-        with open(os.path.join(TempDirectoryPath, 'Database.data'), "r", encoding="utf-8") as file:
-            return file.read()
-    except Exception:
-        return ""
-
-# --- Streamlit session states ---
-if "assistant_status" not in st.session_state:
-    set_assistant_status("Available...")
-
-if "microphone_status" not in st.session_state:
-    set_microphone_status("False")
-
-if 'clear_input' not in st.session_state:
-    st.session_state.clear_input = False
-
-if st.session_state.clear_input:
-    st.session_state.user_input = ""
-    st.session_state.clear_input = False
-
-initialize_chat_log()
-chat_log_integration()
-
-# --- Streamlit UI ---
-st.title(f"{Assistantname} - Your Virtual Assistant")
-
-st.markdown(
-    "Interact with your assistant by typing below or using the microphone (if implemented). "
-    "**For the web version, the mic option is not working; kindly type your query.** "
-    "**If you refresh, you can retype your query.**"
-)
-
-st.markdown(f"**Assistant Status:** {get_assistant_status()}")
-
-mic_toggle = st.checkbox("Microphone On/Off", value=(get_microphone_status() == "True"))
-set_microphone_status("True" if mic_toggle else "False")
-
-video_container = st.container()
-with video_container:
-    col1, _, col2 = st.columns([12,1,12], gap="medium")
-
-    with col1:
-        st.markdown("### Actual Model Demo Video")
-        st.video("https://youtu.be/f1s8T5eC1AY", format="video/mp4", start_time=0)
-    with col2:
-        st.markdown("### Explanation of Project")
-        st.video("https://youtu.be/edf8hZT0mxk", format="video/mp4", start_time=0)
-
-st.markdown(
-    "[GitHub Repository](https://github.com/your_github_repo_link)  \n"
-    "_Click the link above to view the project source code._"
-)
-
-chat_history = show_chats_on_gui()
-st.text_area("Chat History", value=chat_history, height=300, disabled=True)
-
-query_options = [
-    "Play music \"NAME\"",
-    "Generate image \"QUERY\"",
-    "Write a code of \"NAME\"",
-    "LinkedIn AI \"Name of Person\"",
-    "Other (Type your own query)"
-]
-
-selected_query = st.selectbox("Select a query or choose Other to type your own:", query_options)
-user_input = "" if selected_query == "Other (Type your own query)" else selected_query
-if selected_query == "Other (Type your own query)":
-    user_input = st.text_input("Your Query:", key="user_input")
-
-response_placeholder = st.empty()
-
-if st.button("Send") and user_input.strip():
-    set_assistant_status("Thinking...")
-    response_placeholder.text(f"{Username}: {user_input}")
-    
-    # ⚠️ Actual logic is disabled temporarily
-    st.info("Backend modules are disabled right now. This is a test run.")
-
-    assistant_reply = "This is a placeholder reply. Backend not active."
-    set_assistant_status("Answering...")
-    response_placeholder.text(f"{Assistantname}: {assistant_reply}")
-
-    chat_log = read_chat_log()
-    chat_log.append({"role": "user", "content": user_input})
-    chat_log.append({"role": "assistant", "content": assistant_reply})
-    with open(chat_log_path, 'w', encoding='utf-8') as file:
-        json.dump(chat_log, file, indent=2)
-    chat_log_integration()
-
-    set_assistant_status("Available...")
-    st.session_state.clear_input = True
-
-st.markdown("---")
-st.markdown("© Your Assistant powered by Streamlit")
