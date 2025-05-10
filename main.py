@@ -263,8 +263,9 @@ def get_microphone_status():
 env_vars = dotenv_values(".env")
 Username = env_vars.get("Username", "User")
 Assistantname = env_vars.get("Assistantname", "Assistant")
-
-TempDirectoryPath = r'C:\Users\LENOVO\Desktop\c++\jarvis\Frontend\Files'
+# Deployment-safe relative path
+BASE_DIR = os.path.dirname(__file__)
+TempDirectoryPath = os.path.join(BASE_DIR, 'Frontend', 'Files')
 DefaultMessage = f"{Username}: Hello {Assistantname}, How are you?\n{Assistantname}: Welcome {Username}. I am doing well. How may I help you?"
 
 chat_log_path = 'Data/ChatLog.json'
