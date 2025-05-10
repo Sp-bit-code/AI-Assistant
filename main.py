@@ -268,7 +268,7 @@ BASE_DIR = os.path.dirname(__file__)
 TempDirectoryPath = os.path.join(BASE_DIR, 'Frontend', 'Files')
 DefaultMessage = f"{Username}: Hello {Assistantname}, How are you?\n{Assistantname}: Welcome {Username}. I am doing well. How may I help you?"
 
-chat_log_path = 'Data/ChatLog.json'
+chat_log_path = os.path.join(BASE_DIR, 'data', 'ChatLog.json')
 
 # --- Chat management ---
 def initialize_chat_log():
