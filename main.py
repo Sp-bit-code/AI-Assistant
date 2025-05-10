@@ -236,12 +236,12 @@ import streamlit as st
 from dotenv import dotenv_values
 
 # 🔧 Commented Backend Modules for now
-from backend.Model import FirstLayerDMM
-from backend.RealTimeSeachEngine import RealtimeSearchEngine
-from backend.Automation import Automation
-from backend.SpeechToText import SpeechRecognition
-from backend.TextToSpeech import TextToSpeech
-from backend.Chatbot import ChatBot
+# from backend.Model import FirstLayerDMM
+# from backend.RealTimeSeachEngine import RealtimeSearchEngine
+# from backend.Automation import Automation
+# from backend.SpeechToText import SpeechRecognition
+# from backend.TextToSpeech import TextToSpeech
+# from backend.Chatbot import ChatBot
 
 # ✅ Debug message to confirm app loads
 st.write("✅ App started... Streamlit is working!")
