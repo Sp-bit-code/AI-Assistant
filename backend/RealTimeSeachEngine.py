@@ -1,4 +1,3 @@
-
 from googlesearch import search
 from groq import Groq
 from json import load, dump
@@ -7,10 +6,14 @@ import webbrowser
 from dotenv import dotenv_values
 
 # Load environment variables from the env file.
+env_vars = dotenv_values(".env")
 
-Username = "Sparsh Srivastava"  
-Assistantname = "sparsh"  
-GroqAPIKey = "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" 
+# Retrieve environment variables for the chatbot configuration.
+Username = env_vars.get("Username")
+Assistantname = env_vars.get("Assistantname")
+GroqAPIKey = env_vars.get("GroqAPIKey")
+
+# Initialize the Groq client with the provided API key.
 client = Groq(api_key=GroqAPIKey)
 
 # Define the system instructions for the chatbot.
@@ -152,3 +155,5 @@ if __name__ == "__main__":
     while True:
         prompt = input("Enter your query: ")
         print(RealtimeSearchEngine(prompt))
+
+
