@@ -1,3 +1,6 @@
+
+
+
 from AppOpener import close, open as appopen  # Import functions to open and close apps.
 from webbrowser import open as webopen  # Import web browser functionality.
 from pywhatkit import search, playonyt  # Import functions for Google search and YouTube playback.
@@ -22,9 +25,9 @@ import pygetwindow as gw
 import re
 
 
-
-GroqAPIKey = "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" 
-client = Groq(api_key=GroqAPIKey)
+# Load environment variables from the .env file.
+env_vars = dotenv_values(".env")
+GroqAPIKey = env_vars.get("GroqAPIKey")  # Retrieve the Groq API key.
 
 # Define CSS classes for parsing specific elements in HTML content.
 classes = ["zCubwf", "hgKElc", "LTKOO SY7ric", "ZOLcW", "gsrt vk_bk FzvWSb YwPhnf", "pcclasses=LzCubwf", "hgKElc", "LIKOO SY/ric", "20LcW", "gsrt vk_bk FzvWSb YwPhnf", "pciqee", "tw-Data-text tw-text-small tw-ta", "IZ6rdc", "05uR6d LTKOO", "vlzY6d", "webanswers-webanswers_table_webanswers-table", "dDoNo ikb48b gsrt", "sXLa0e", "LWkfKe", "VQF4g", "qv3Wpe", "kno-rdesc", "SPZz6b"]
