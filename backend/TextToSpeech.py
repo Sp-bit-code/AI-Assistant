@@ -3,9 +3,11 @@ import random  # Import random for generating random choices
 import asyncio  # Import asyncio for asynchronous operations 
 import edge_tts  # Import edge tts for text-to-speech functionality 
 import os  # Import os for file path handling 
-# from dotenv import dotenv_values  # Commenting out since we're not using it
-# Directly set the AssistantVoice
-AssistantVoice = "en-IN-NeerjaNeural"  # Get the AssistantVoice from the environment variables 
+from dotenv import dotenv_values  # Import dotenv for reading environment variables from a .env file 
+
+# Load environment variables from a .env file 
+env_vars = dotenv_values(".env") 
+AssistantVoice = env_vars.get("AssistantVoice")  # Get the AssistantVoice from the environment variables 
 
 # Asynchronous function to convert text to an audio file 
 async def TextToAudioFile(text) -> None:
@@ -87,3 +89,4 @@ if __name__ == "__main__":
     while True: 
         # Prompt user for input and pass it to TextToSpeech function 
         TextToSpeech(input("Enter the text: "))
+
