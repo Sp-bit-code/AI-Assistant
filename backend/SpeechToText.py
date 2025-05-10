@@ -7,6 +7,7 @@ from dotenv import dotenv_values
 import os 
 import mtranslate as mt 
 
+
 InputLanguage = "en"
 
 # Define the HTML code for the speech recognition interface. 
