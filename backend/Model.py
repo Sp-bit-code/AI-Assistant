@@ -1,15 +1,18 @@
 import cohere
 from rich import print
-# Directly set the Cohere API key
-cohereAPIkey = "cSgtaMKgevdK0ZFkeQkoJC4K28jrVZ1THl64Zskk"  # Replace with your actual API key
-# Initialize the Cohere client
-co = cohere.Client(api_key=cohereAPIkey)
-# Define recognized functions
-funcs = [
-    "exit", "general", "realtime", "open", "close",
-    "play", "generate image",
-    "system", "content", "google search",
-    "youtube search", "reminder"
+from dotenv import dotenv_values
+
+
+env_vars=dotenv_values(".env")
+cohereAPIkey = env_vars.get("chohereAPIkey")
+
+co=cohere.Client(api_key=cohereAPIkey)
+
+funcs=[
+    "exit","general","realtime","open","close",
+    "play","generate image",
+    "system","content","google search",
+    "youtube search","reminder"
 ]
 messages=[]
 preamble = """
