@@ -100,7 +100,7 @@ def QueryModifier(Query):
         else: 
             new_query += "." 
     
-    return new_query.capitalize() 
+    return new_query.capitalize()
 
 # Function to translate text into English using the mtranslate library. 
 def UniversalTranslator(Text): 
